@@ -1,0 +1,148 @@
+// Modelul de date — Piața Continuă (Etapa 2).
+// SQLite în dev → Postgres la pilot (aceeași schemă). Vezi DECISIONS #14.
+// Teritoriu: bazin = oraș + peri-urban (#10/#27); un user vede producătorii din
+// raza lui (~45 km de adresă). „Cartier"/„Stație" = sub-elemente (rutare/viitor).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Bazin urban (oraș + peri-urban). Filtrarea reală se face pe rază de la adresă.
+model City {
+  id            String         @id @default(cuid())
+  name          String // „București + Ilfov"
+  lat           Float
+  lng           Float
+  radiusKm      Int            @default(45)
+  producers     Producer[]
+  consumers     Consumer[]
+  stations      Station[]
+  neighborhoods Neighborhood[]
+}
+
+/// Cartier (sub-zonă pentru rutarea livrării — folosit la etape ulterioare).
+model Neighborhood {
+  id     String @id @default(cuid())
+  name   String
+  city   City   @relation(fields: [cityId], references: [id])
+  cityId String
+}
+
+/// Stație de ridicare (opțional/viitor — livrarea la ușă e modul principal, #17).
+model Station {
+  id     String @id @default(cuid())
+  name   String
+  lat    Float
+  lng    Float
+  city   City   @relation(fields: [cityId], references: [id])
+  cityId String
+}
+
+model Producer {
+  id             String  @id @default(cuid())
+  name           String
+  owner          String
+  emoji          String  @default("🧑‍🌾")
+  lat            Float
+  lng            Float
+  punctuality    Int     @default(95) // % onorare promisiune de livrare
+  deliveryFee    Int     @default(15) // taxă de transport per comandă (livrare la ușă, #17)
+  deliveryWindow String  @default("08:00–10:00") // fereastra de livrare în ziua Cursei
+  city           City    @relation(fields: [cityId], references: [id])
+  cityId         String
+  offers         Offer[]
+  curse          Cursa[]
+}
+
+model Offer {
+  id          String   @id @default(cuid())
+  productName String
+  emoji       String   @default("🥬")
+  price       Float
+  unit        String   @default("kg")
+  stock       Float    @default(0)
+  deliveryDay String // „Joi"
+  cutoff      String // „marți, 12:00"
+  producer    Producer @relation(fields: [producerId], references: [id])
+  producerId  String
+  createdAt   DateTime @default(now())
+}
+
+model Consumer {
+  id       String    @id @default(cuid())
+  name     String
+  address  String
+  lat      Float
+  lng      Float
+  city     City      @relation(fields: [cityId], references: [id])
+  cityId   String
+  requests Request[]
+  baskets  Basket[]
+  orders   Order[]
+}
+
+/// Cerere = ce caută cumpărătorul (structurarea pe articole vine la Etapa 4).
+model Request {
+  id         String   @id @default(cuid())
+  rawText    String
+  consumer   Consumer @relation(fields: [consumerId], references: [id])
+  consumerId String
+  createdAt  DateTime @default(now())
+}
+
+model Basket {
+  id         String   @id @default(cuid())
+  consumer   Consumer @relation(fields: [consumerId], references: [id])
+  consumerId String
+  createdAt  DateTime @default(now())
+  orders     Order[]
+}
+
+/// Cursă = fereastră de timp per producător (fără prag, #18).
+/// `cutoff`/`deliveryDay` = etichetele afișate; `cutoffAt`/`deliveryAt` (Etapa 11)
+/// = termenele reale pe care le execută `/api/tick` (cron agnostic, #42).
+model Cursa {
+  id          String    @id @default(cuid())
+  deliveryDay String
+  cutoff      String
+  cutoffAt    DateTime?
+  deliveryAt  DateTime?
+  status      String    @default("deschisa") // deschisa | inchisa | livrata
+  producer    Producer  @relation(fields: [producerId], references: [id])
+  producerId  String
+  orders      Order[]
+}
+
+model Order {
+  id         String   @id @default(cuid())
+  status     String   @default("nou") // nou | acceptat | platit | refuzat | livrat
+  total      Float    @default(0)
+  consumer   Consumer @relation(fields: [consumerId], references: [id])
+  consumerId String
+  basket     Basket?  @relation(fields: [basketId], references: [id])
+  basketId   String?
+  cursa      Cursa?   @relation(fields: [cursaId], references: [id])
+  cursaId    String?
+  createdAt  DateTime @default(now())
+}
+
+/// Telemetrie (Etapa 11): evenimentele `track()` persistate — hrănesc pagina
+/// owner „Puls" (densitate + cele 5 ipoteze de pilot cu praguri go/no-go).
+model Event {
+  id        String   @id @default(cuid())
+  name      String // ex. „plata.escrow", „cursa.cutoff"
+  props     String   @default("{}") // JSON (SQLite nu are tip Json portabil spre Postgres)
+  createdAt DateTime @default(now())
+}
+
+/// Feedback calitativ — butonul „Spune-ne" (Etapa 11); citit în „Puls".
+model Feedback {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+}

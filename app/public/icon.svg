@@ -1,0 +1,8 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Piața Continuă">
+  <rect width="512" height="512" rx="112" fill="#0d631b"/>
+  <g fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M256 372 V236"/>
+    <path d="M256 268 C256 210 300 168 360 162 C360 220 318 264 256 268 Z" fill="#a3f69c" stroke="#a3f69c"/>
+    <path d="M256 300 C256 246 214 208 158 204 C158 256 198 296 256 300 Z" fill="#ffffff" stroke="#ffffff"/>
+  </g>
+</svg>

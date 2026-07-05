@@ -1,0 +1,39 @@
+{
+  "name": "piata-continua",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Piața Continuă (Model D) — MVP. Next.js PWA + Prisma/SQLite.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:push": "prisma db push",
+    "db:seed": "node prisma/seed.mjs",
+    "db:reset": "prisma db push --force-reset --accept-data-loss && node prisma/seed.mjs",
+    "pg:on": "node scripts/pg-schema.mjs on",
+    "pg:off": "node scripts/pg-schema.mjs off",
+    "test:concurrency": "node scripts/test-concurrency.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "prisma": "^6.19.3",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3"
+  }
+}

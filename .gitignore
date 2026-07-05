@@ -1,0 +1,25 @@
+# Secrete și artefacte — nimic din astea nu ajunge pe GitHub.
+# (Regulile din app/.gitignore acoperă subfolderul app/; astea sunt pentru rădăcină.)
+
+# dependențe / build
+node_modules/
+.next/
+out/
+build/
+
+# variabile de mediu cu secrete (șablonul .env.example rămâne urmărit)
+.env
+.env.local
+.env*.local
+**/.env
+!**/.env.example
+
+# baze locale SQLite
+*.db
+*.db-journal
+
+# unelte
+.vercel/
+.DS_Store
+*.pem
+*.tsbuildinfo
