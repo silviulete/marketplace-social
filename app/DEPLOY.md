@@ -57,11 +57,13 @@ La final rulează **`npx vercel --prod`** — primești adresa publică (ex. `pi
 
 ## Pasul 5 — Cron-ul (termenele Cursei)
 
-Nimic de făcut: `vercel.json` e deja configurat să apeleze **`/api/tick` la fiecare
-5 minute** (închide Cursele la cutoff, expiră comenzile neatinse, marchează
-livrările). Verifici în Vercel → Settings → Cron Jobs că apare.
-*(Alternativa VPS rămâne deschisă — #41b: orice mașină poate apela periodic
-`curl -H "Authorization: Bearer CRON_SECRET" https://adresa-ta/api/tick`.)*
+`vercel.json` apelează **`/api/tick` o dată pe zi** (06:00 UTC) — închide Cursele
+la cutoff, expiră comenzile neatinse, marchează livrările. **De ce o dată pe zi:**
+planul gratuit **Hobby** permite cron doar zilnic (nu mai des). E suficient pentru
+pilotul mic; termenele se procesează la următoarea rulare.
+*Pentru cadență mai strânsă (la 5-10 min), fără Pro: orice mașină/serviciu poate
+apela periodic `curl -H "Authorization: Bearer CRON_SECRET" https://adresa-ta/api/tick`
+(ex. un workflow GitHub Actions sau cron-job.org). #41b.*
 
 ## Pasul 6 — Verificarea de după publicare (pe telefon)
 
