@@ -12,6 +12,15 @@ peri-urbani și cumpărători din oraș, cu **livrare la ușă**, alocare în ti
 Fondatorul **nu e developer** și validează vizual fiecare etapă, pe telefon, în
 **limba română**.
 
+## 🟢 LIVE ÎN PRODUCȚIE: https://marketplace-social.vercel.app (decizia #44)
+
+Etapa 11 §deploy = **livrată**. GitHub `silviulete/marketplace-social` → Vercel
+(Hobby), Root Directory `app`, Postgres pe Neon, AI = Gemini Flash Lite
+(`gemini-flash-lite-latest`, determinist-întâi). Deploy prin **Deploy Hook**
+(POST pe URL-ul din Vercel → Settings → Git). Verificat în prod: pagini 200,
+`/api/tick` 401 (protejat), AI `cloud:gemini` corect. Cron zilnic (limita Hobby).
+**Rămâne:** onboarding producători + plan de recrutare (amânat de fondator).
+
 ## Unde suntem: etapele 1a → 9 LIVRATE ✅
 
 | Etapă | Ce face | Verificare vizibilă |
