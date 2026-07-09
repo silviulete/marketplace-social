@@ -60,6 +60,8 @@ vânzătorului au pas următor (fără funduri de sac).
   cu Claude Preview MCP, launch **„piata"**, **port 3100** (`http://localhost:3100`).
 - **DB curat:** `npm run db:seed` — **rulează asta înainte de demo**, fiindcă
   publicarea din Tarabă (Etapa 3/6b) suprascrie ofertele Ferma Verde în DB.
+  ⚠️ **Atenție:** `.env` local pointează acum la **Neon (producția)** — un `db:seed`
+  reseeduie baza LIVE. Pentru dev izolat, `npm run pg:off` + un `DATABASE_URL` SQLite.
 - **Regresii vizibile** (ca testele, dar pe telefon) — din hub-ul **`/demo`
   („Mod demo & teste", link discret la finalul Profilului — decizia #39)**:
   `/golden` (Taraba), `/golden-cerere` (Strigarea), `/socoteala` (MatchingEngine),
@@ -114,57 +116,40 @@ vânzătorului au pas următor (fără funduri de sac).
 
 ---
 
-## Etapa 11 — STARE: partea locală LIVRATĂ (decizia #41); rămâne deploy-ul
+## Etapa 11 — LIVRATĂ ✅ (deciziile #41–#44)
 
-Construit local (2026-07-02): **telemetrie în DB** (`track()`→`Event`) + pagina
-owner **`/puls`** (densitate vs prag ~12 + cele 5 ipoteze + feedback); **„Spune-ne"**
-în Profil (→`Feedback`); **PWA instalabilă** (icons PNG generate de
-`scripts/make-icons.mjs`, `sw.js`, înregistrare doar în producție); **Gemma/AI
-Studio** în spatele `ModelProvider` (`/api/extract` — LLM normalizează, numerele
-rămân deterministe #7; fără cheie → mock); cusătura **`NotifyProvider`** (email
-simulat; apelată la publicarea ofertei). Config în `app/.env.example`.
-Completat (2026-07-03, decizia #42): **termene reale pe Cursă** (`cutoffAt`/
-`deliveryAt`, derivate din etichete la publicare — `lib/termene.ts`) + worker-ul
-**`/api/tick`** (idempotent, claim atomic, protejat cu `CRON_SECRET`, cron Vercel
-în `vercel.json`, agnostic la apelant) + **test de concurență**
-(`npm run test:concurrency` — 5/5 pe SQLite; de re-rulat pe Postgres) + **kit
-Postgres** (`npm run pg:on/off`) + **ghid de deploy** (`app/DEPLOY.md`, în română,
-pentru fondator).
-**Rămâne:** fondatorul parcurge `app/DEPLOY.md` (conturi Vercel + Neon + cheia
-Gemma), re-rularea testului de concurență pe Postgres, onboarding + planul de
-recrutare (amânat de fondator după partea tehnică, #41d).
+**Construit** (2026-07-02/03): telemetrie în DB (`track()`→`Event`) + pagina owner
+**`/puls`** (densitate vs prag ~12 + cele 5 ipoteze + feedback); **„Spune-ne"** în
+Profil (→`Feedback`); **PWA instalabilă** (`scripts/make-icons.mjs`, `sw.js`);
+**AI cloud** = **Gemini Flash Lite** în spatele `ModelProvider`, arhitectură
+**determinist-întâi / AI-plasă** (`/api/extract`; #43 — numerele rămân deterministe
+#7); cusătura **`NotifyProvider`** (email simulat); **termene reale pe Cursă**
+(`cutoffAt`/`deliveryAt` din `lib/termene.ts`) + worker **`/api/tick`** (idempotent,
+`CRON_SECRET`) + **test de concurență** (`npm run test:concurrency`, 5/5).
 
-## Următoarea etapă: ETAPA 11 — Pregătire pilot publicat
+**Publicat & verificat în producție** (2026-07-03, #44) — vezi secțiunea „🟢 LIVE"
+de sus. Rămâne din pilot: **onboarding ~10 producători + 1 cartier + planul concret
+de recrutare** (amânat de fondator, `analiza/model-D-piata-continua.md` §7);
+opțional: cadență cron mai deasă, rotația secretelor, re-rulare concurență pe Neon.
 
-> Nu există Etapa 10 în secvența pilotului (numărul e păstrat pentru un modul
-> amânat post-pilot: owner dashboard + decontare + raport transparență).
+## Cum se operează (pentru un chat NOU)
 
-**Ce livrează (din plan §Etapele + §11):**
+- **Update în producție = push pe `main`.** Modifici cod în `app/` → commit → push
+  la `github.com/silviulete/marketplace-social` → **Vercel publică automat** (1-2 min).
+  Nu e nevoie de Deploy Hook (auto-deploy funcționează). Verifici live cu `curl`
+  pe rutele din `https://marketplace-social.vercel.app`.
+- **Secretele** (Neon `DATABASE_URL`, `GOOGLE_AI_API_KEY`, `AI_MODEL`,
+  `NEXT_PUBLIC_MODEL_PROVIDER=cloud`, `CRON_SECRET`) stau în **Vercel → Settings →
+  Environment Variables** și în `app/.env` local (gitignored). Șablon: `app/.env.example`.
+- **Schema Prisma e pe `postgresql`** (ca producția). Local dev lovește Neon prin
+  `app/.env`. Pentru SQLite izolat: `npm run pg:off` — dar **NU comite schema sqlite**
+  (auto-deploy-ul cere „postgresql"). `npm run pg:on` o readuce.
+- **Migrări de schemă la pilot:** după ce schimbi `schema.prisma`, rulează
+  `npx prisma db push` cu `DATABASE_URL` = Neon (nu se face automat la deploy).
+- **Cron:** `vercel.json` rulează `/api/tick` **zilnic** (limita planului Hobby).
+  Pentru 5-10 min fără Pro: trigger extern cu `Authorization: Bearer CRON_SECRET`.
+- **Next.js = 15.5.x** (patch CVE; Vercel blochează versiunile vulnerabile — nu
+  coborî sub asta). **Plăți simulate** în pilot (#4).
 
-1. **Deploy:** UI pe **Vercel**, DB **Postgres**, **AI cloud ieftin ca DEFAULT**
-   (Gemma via Google AI Studio/Groq sau echivalent — comutare = o setare în `ModelProvider`),
-   **worker/cron pe VPS mic** pentru termenele Cursei (cutoff/livrare) + decontare.
-2. **PWA instalabilă** — atenție la iOS (instalarea e slabă): **notificările critice
-   pe SMS/email**, nu doar push.
-3. **SQLite → Postgres** — rulează testele de integrare pe Postgres devreme (tipuri,
-   concurență, funcții de timp); **test de concurență pe Curse** („comandă la
-   milisecunda de închidere").
-4. **Onboarding ~10 producători reali + 1 cartier**, cu **plan concret de recrutare**
-   (vezi `analiza/model-D-piata-continua.md` §7).
-5. **Feedback calitativ** — interviuri + buton „spune-ne" în app.
-6. **Instrumentarea celor 5 ipoteze** (fiecare cu prag go/no-go):
-   1. Cerere urbană suficientă → ≥30 coșuri la runda 3 ȘI ≥150 activi în 8 săptămâni.
-   2. Lichiditate vie fără eveniment → revenire între runde ≥60%; „viu" calitativ.
-   3. Disciplina promisiunii de livrare → onorare ≥95% (sub 90% → activează hedge-ul).
-   4. Transportul nu omoară coșul → coș median ≥60 lei (overhead <15%); >40% sub 40 lei → reconsideră.
-   5. Venituri non-tranzacționale → rotunjire ≥20% SAU sponsor semnat.
-7. **Plăți încă simulate** în pilot (fără bani reali — decizia #4).
-8. **Un singur număr de densitate vizibil** pentru owner (Curse/săptămână vs pragul ~12).
-
-**Natura etapei:** infrastructură + go-to-market + măsurare (mai puțin UI nou).
-Decizii probabile de confirmat cu fondatorul la kickoff: alegerea concretă a
-providerului AI cloud + a hostingului VPS; conținutul planului de recrutare; ce
-notificări critice trec pe SMS/email.
-
-**De citit întâi (în ordine):** `CLAUDE.md` → `analiza/plan-dezvoltare-D.md`
-→ `DECISIONS.md` (mai ales #13–#38) → acest HANDOFF → `README.md` + `app/README.md`.
+**De citit întâi (chat nou, în ordine):** `CLAUDE.md` → `analiza/plan-dezvoltare-D.md`
+→ `DECISIONS.md` (mai ales #13–#44) → acest HANDOFF → `app/DEPLOY.md` + `README.md`.

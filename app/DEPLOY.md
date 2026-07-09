@@ -1,8 +1,13 @@
 # Ghid de deploy — Piața Continuă pe internet (Etapa 11)
 
+> ✅ **DEJA PUBLICAT** (2026-07-03): **https://marketplace-social.vercel.app**
+> GitHub `silviulete/marketplace-social` → Vercel (Hobby, Root Directory `app`) →
+> Postgres pe Neon. **Update-uri:** push pe `main` → Vercel publică automat.
+> Secretele sunt în Vercel → Settings → Environment Variables. Ghidul de mai jos
+> rămâne ca referință (cum s-a făcut / cum se reface). Detalii op.: `HANDOFF.md`.
+>
 > Ghid pas-cu-pas pentru publicarea pilotului. Nu cere cunoștințe de programare —
-> doar conturi (gratuite la scara pilotului) și copiere de valori. Unde scrie
-> „terminal", înseamnă PowerShell deschis în folderul `app/`.
+> doar conturi (gratuite la scara pilotului) și copiere de valori.
 > Plățile rămân SIMULATE în pilot (decizia #4) — nu se leagă niciun ban real.
 
 ## Ce îți trebuie (toate gratuite la început)
